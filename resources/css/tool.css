@@ -1,0 +1,84 @@
+/* Nova Tool CSS */
+
+.pc-switch {
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #e5e7eb;
+  display: inline-block;
+  position: relative;
+  transition: background-color 150ms ease;
+}
+
+.pc-switch::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffffff;
+  transition: transform 150ms ease;
+}
+
+.pc-switch-input:focus-visible + .pc-switch {
+  outline: 2px solid rgba(59, 130, 246, 0.45);
+  outline-offset: 2px;
+}
+
+.pc-switch-input:checked + .pc-switch::before {
+  transform: translateX(20px);
+}
+
+.pc-switch-input:checked + .pc-switch.pc-switch--safe {
+  background: #3b82f6;
+}
+
+.pc-switch-input:checked + .pc-switch.pc-switch--warning {
+  background: #f97316;
+}
+
+.pc-switch-input:checked + .pc-switch.pc-switch--danger {
+  background: #ef4444;
+}
+
+html.dark .pc-switch {
+  background: #374151;
+}
+
+.pc-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.pc-layout-sidebar {
+  width: 280px;
+  flex: 0 0 280px;
+}
+
+.pc-layout-sidebar-inner {
+  position: sticky;
+  top: 24px;
+}
+
+.pc-layout-editor {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .pc-layout {
+    flex-direction: column;
+  }
+
+  .pc-layout-sidebar {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .pc-layout-sidebar-inner {
+    position: static;
+  }
+}

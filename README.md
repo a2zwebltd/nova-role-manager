@@ -177,6 +177,11 @@ Control tab order:
 
 MIT
 
+## Security
+
+If you discover a security vulnerability, please email contact@a2zweb.co.
+
 ## Credits
 
-Developed by A2Z Web Ltd
+- [A2Z Web](https://a2zweb.co)
+- [All Contributors](../../contributors)

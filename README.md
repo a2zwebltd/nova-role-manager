@@ -2,7 +2,7 @@
 
 [![Packagist Version](https://img.shields.io/packagist/v/a2zwebltd/nova-role-manager.svg)](https://packagist.org/packages/a2zwebltd/nova-role-manager)
 [![Downloads](https://img.shields.io/packagist/dt/a2zwebltd/nova-role-manager.svg)](https://packagist.org/packages/a2zwebltd/nova-role-manager)
-![PHP](https://img.shields.io/badge/PHP-%5E8.3-blue)
+![PHP](https://img.shields.io/badge/PHP-%5E8.2-blue)
 
 A visual role and permission management tool for Laravel Nova. Built on Spatie's Laravel Permission package with automatic audit logging.
 
@@ -172,10 +172,10 @@ Control tab order:
 
 ## Requirements
 
-- Laravel 10+
+- Laravel 10, 11, 12, or 13
 - Laravel Nova 5+
 - Spatie Laravel Permission 5+
-- PHP 8.1+
+- PHP 8.2+
 
 ## License
 

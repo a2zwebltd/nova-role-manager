@@ -11,6 +11,7 @@
   "devDependencies": {
     "@vue/compiler-sfc": "^3.5.26",
     "laravel-mix": "^6.0.49",
-    "vue-loader": "^16.8.3"
+    "vue-loader": "^16.8.3",
+    "webpack": "^5.107.2"
   }
 }

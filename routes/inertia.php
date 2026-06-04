@@ -15,5 +15,7 @@ use Laravel\Nova\Http\Requests\NovaRequest;
 */
 
 Route::get('/', function (NovaRequest $request) {
-    return inertia('RoleManagerMain');
+    return inertia('RoleManagerMain', [
+        'toolName' => config('role-manager.tool_name'),
+    ]);
 });

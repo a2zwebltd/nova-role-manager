@@ -1,6 +1,6 @@
 <template>
   <div class="px-3 md:px-0">
-    <Heading class="mb-6">Roles and Permissions Manager</Heading>
+    <Heading class="mb-6">{{ toolName }}</Heading>
 
     <Card class="overflow-hidden">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
@@ -181,6 +181,13 @@
 <script setup>
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { formatGuardName } from '../utils'
+
+defineProps({
+  toolName: {
+    type: String,
+    default: 'Roles and Permissions Manager',
+  },
+})
 
 const guards = ref({})
 const selectedGuard = ref(null)

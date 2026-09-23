@@ -7,6 +7,7 @@ namespace A2ZWeb\NovaRoleManager\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionsController
@@ -14,7 +15,7 @@ class RolePermissionsController
     public function getRolePermissions(Request $request): JsonResponse
     {
         $request->validate([
-            'role_id' => 'required|integer|exists:roles,id',
+            'role_id' => ['required', 'integer', $this->roleExistsRule()],
         ]);
 
         $roleModel = config('role-manager.role_model');
@@ -77,18 +78,10 @@ class RolePermissionsController
     public function togglePermission(Request $request): JsonResponse
     {
         $request->validate([
-            'role_id' => 'required|integer|exists:roles,id',
+            'role_id' => ['required', 'integer', $this->roleExistsRule()],
             'permission_id' => 'required|integer',
             'assign' => 'required|boolean',
         ]);
-
-        $user = $request->user();
-
-        // Check if edit permission is required
-        $editPermission = config('role-manager.edit_permission');
-        if ($editPermission !== null && (! $user || ! $user->can($editPermission))) {
-            return response()->json(['error' => 'You do not have permission to edit roles'], 403);
-        }
 
         $roleModel = config('role-manager.role_model');
         $permissionModel = config('role-manager.permission_model');
@@ -97,6 +90,10 @@ class RolePermissionsController
 
         if (! $role) {
             return response()->json(['error' => 'Role not found'], 404);
+        }
+
+        if ($denied = $this->denyRoleEdit($request, $role)) {
+            return $denied;
         }
 
         $permission = $permissionModel::where('id', $request->permission_id)
@@ -113,19 +110,11 @@ class RolePermissionsController
     public function bulkTogglePermissions(Request $request): JsonResponse
     {
         $request->validate([
-            'role_id' => 'required|integer|exists:roles,id',
+            'role_id' => ['required', 'integer', $this->roleExistsRule()],
             'permission_ids' => 'required|array',
             'permission_ids.*' => 'required|integer',
             'assign' => 'required|boolean',
         ]);
-
-        $user = $request->user();
-
-        // Check if edit permission is required
-        $editPermission = config('role-manager.edit_permission');
-        if ($editPermission !== null && (! $user || ! $user->can($editPermission))) {
-            return response()->json(['error' => 'You do not have permission to edit roles'], 403);
-        }
 
         $roleModel = config('role-manager.role_model');
         $permissionModel = config('role-manager.permission_model');
@@ -134,6 +123,10 @@ class RolePermissionsController
 
         if (! $role) {
             return response()->json(['error' => 'Role not found'], 404);
+        }
+
+        if ($denied = $this->denyRoleEdit($request, $role)) {
+            return $denied;
         }
 
         $permissions = $permissionModel::whereIn('id', $request->permission_ids)
@@ -159,20 +152,12 @@ class RolePermissionsController
     public function saveRolePermissions(Request $request): JsonResponse
     {
         $request->validate([
-            'role_id' => 'required|integer|exists:roles,id',
+            'role_id' => ['required', 'integer', $this->roleExistsRule()],
             'permission_ids_to_add' => 'array',
             'permission_ids_to_add.*' => 'required|integer',
             'permission_ids_to_remove' => 'array',
             'permission_ids_to_remove.*' => 'required|integer',
         ]);
-
-        $user = $request->user();
-
-        // Check if edit permission is required
-        $editPermission = config('role-manager.edit_permission');
-        if ($editPermission !== null && (! $user || ! $user->can($editPermission))) {
-            return response()->json(['error' => 'You do not have permission to edit roles'], 403);
-        }
 
         $roleModel = config('role-manager.role_model');
         $permissionModel = config('role-manager.permission_model');
@@ -186,10 +171,8 @@ class RolePermissionsController
             return response()->json(['error' => 'Role not found'], 404);
         }
 
-        // Prevent editing protected roles
-        $protectedRoles = array_map('strtoupper', config('role-manager.protected_roles', []));
-        if (in_array(strtoupper($role->name), $protectedRoles, true)) {
-            return response()->json(['error' => 'This role is protected and cannot be edited'], 403);
+        if ($denied = $this->denyRoleEdit($request, $role)) {
+            return $denied;
         }
 
         try {
@@ -231,6 +214,37 @@ class RolePermissionsController
                 'error' => 'Failed to save role permissions: '.$e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * The single server-side gate for every endpoint that changes a role's
+     * permissions: the optional edit permission, then the protected roles.
+     * Returns the 403 response to send, or null when the edit is allowed.
+     */
+    private function denyRoleEdit(Request $request, $role): ?JsonResponse
+    {
+        $user = $request->user();
+
+        $editPermission = config('role-manager.edit_permission');
+        if ($editPermission !== null && (! $user || ! $user->can($editPermission))) {
+            return response()->json(['error' => 'You do not have permission to edit roles'], 403);
+        }
+
+        $protectedRoles = array_map('strtoupper', (array) config('role-manager.protected_roles', []));
+        if (in_array(strtoupper((string) $role->name), $protectedRoles, true)) {
+            return response()->json(['error' => 'This role is protected and cannot be edited'], 403);
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate role ids against the configured role model, so a custom model
+     * or a renamed Spatie roles table (permission.table_names.roles) works.
+     */
+    private function roleExistsRule(): \Illuminate\Validation\Rules\Exists
+    {
+        return Rule::exists(config('role-manager.role_model'), 'id');
     }
 
     private function togglePermissionsForRole($role, \Illuminate\Support\Collection $permissions, bool $assign, string $errorMessage): JsonResponse

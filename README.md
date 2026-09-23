@@ -159,6 +159,8 @@ Prevent certain roles from being edited:
 ],
 ```
 
+Names match case-insensitively. The check runs server-side on every endpoint that changes a role's permissions (toggle, bulk toggle and save), as does `edit_permission`.
+
 ### Guard Display Order
 
 Control tab order:
